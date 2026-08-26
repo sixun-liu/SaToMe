@@ -105,7 +105,7 @@ class LLaDAOT2IRuntime:
 
     def _plan(self, hidden: Tensor, grid_height: int, grid_width: int) -> tuple[CellMergePlan, str]:
         if self.step < self.config.temporal_protection_end:
-            signal = "temporal_vae_delta"
+            signal = "temporal_latent_delta"
             if self.temporal_delta is None:
                 protection_features = hidden
                 force_protected = torch.ones(
@@ -130,7 +130,7 @@ class LLaDAOT2IRuntime:
             self.config.protect_ratio,
             protection_score="isolation",
         )
-        if signal == "temporal_vae_delta":
+        if signal == "temporal_latent_delta":
             if force_protected is None:
                 self.fixed_temporal_mask = plan.protected.detach().clone()
             else:

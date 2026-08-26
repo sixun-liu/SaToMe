@@ -12,7 +12,7 @@ def _validate_odd_kernel(kernel_size: int) -> None:
 
 @dataclass(frozen=True)
 class T2IConfig:
-    """Benchmark-compatible configuration for the LLaDA-o T2I path."""
+    """Default release configuration for the LLaDA-o T2I path."""
 
     total_steps: int = 50
     window_start: int = 16

@@ -73,7 +73,7 @@ def test_temporal_mask_is_frozen_only_during_early_stage() -> None:
     runtime.temporal_delta = torch.randn_like(runtime.temporal_delta)
     second_plan, second_signal = runtime._plan(torch.randn(1, 16, 8), 4, 4)
 
-    assert first_signal == second_signal == "temporal_vae_delta"
+    assert first_signal == second_signal == "temporal_latent_delta"
     assert torch.equal(first_plan.protected, second_plan.protected)
 
     runtime.begin_step(2)

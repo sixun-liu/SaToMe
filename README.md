@@ -14,7 +14,7 @@ paths:
 
 This is an initial, usable release focused on the LLaDA-o T2I path. The public
 core has been extracted from the experiment implementation, stripped of
-ablation branches, and checked against the saved 1K COCO run configuration.
+ablation branches, and checked against the reference experiment invariants.
 
 | Path | Backbone | Status |
 |---|---|---|
@@ -22,9 +22,8 @@ ablation branches, and checked against the saved 1K COCO run configuration.
 | I2T | LLaDA-o | planned |
 | I2T | LaViDa | planned |
 
-The MVP intentionally does not claim full-paper reproduction yet. It publishes
-the `benchmark_compatible_d63` T2I profile used by the reported 1K COCO run;
-the equation-aligned protection profile remains under provenance audit.
+The MVP provides the default T2I inference path and a matched-seed smoke demo.
+Full benchmark launchers and the two I2T integrations will follow.
 
 ## Quick Start: LLaDA-o T2I
 
@@ -52,8 +51,8 @@ default 1024x1024 setting, SaToMe retains 2,764/4,096 visual tokens during 29
 active model steps and protects 358/1,024 cells.
 
 See [the integration guide](integrations/llada_o/README.md) for implementation
-boundaries and [the extraction manifest](docs/EXTRACTION_MANIFEST.md) for exact
-experiment provenance.
+boundaries and [the extraction manifest](docs/EXTRACTION_MANIFEST.md) for the
+released-code scope.
 
 ## Repository Layout
 

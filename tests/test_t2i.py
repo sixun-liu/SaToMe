@@ -61,7 +61,7 @@ def test_default_4096_token_grid_protects_358_cells() -> None:
     assert retained_tokens == 2764
 
 
-def test_plan_matches_d63_reference_equations() -> None:
+def test_plan_matches_reference_equations() -> None:
     torch.manual_seed(42)
     hidden = torch.randn(1, 64, 32)
     temporal_delta = torch.randn(1, 64, 7)

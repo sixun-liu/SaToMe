@@ -16,13 +16,13 @@ python scripts/llada_o_t2i_demo.py \
 ```
 
 The `both` mode loads the model once and emits matched-seed `baseline.png`,
-`satome.png`, and `metrics.json`. The benchmark-compatible profile should
+`satome.png`, and `metrics.json`. The default profile should
 report 29 active steps, 358 protected cells, and 2,764/4,096 retained visual
 tokens for a 1024x1024 image. LLaDA-o constructs 50 timestep points but omits
 the terminal point from model evaluation, so the half-open `[16, 45)` window
 contains 29 forward passes.
 
-The extraction passes CPU invariants and exact D63 planning-equation parity.
+The extraction passes CPU invariants and exact reference planning-equation parity.
 An end-to-end checkpoint smoke is still pending on a CUDA-enabled host.
 
 I2T extraction is not included in the MVP yet.

@@ -121,7 +121,7 @@ def cell_isolation_salience(features: Tensor, grid_height: int, grid_width: int)
     For each token in a 2x2 cell, this computes its mean cosine similarity to
     the other three tokens. The cell score is one minus the smallest of those
     four means, so a single structurally distinct token is enough to protect
-    the cell. This is the exact protection score used by the released D63 T2I
+    the cell. This is the protection score used by the default T2I
     configuration.
     """
 

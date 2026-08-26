@@ -1,11 +1,11 @@
 backbone: llada_o
 task: text_to_image
-profile: benchmark_compatible_d63
+profile: satome_t2i_default
 steps: 50
 window: [16, 45]
 protection_schedule:
   - window: [16, 25]
-    signal: temporal_vae_delta
+    signal: temporal_latent_delta
     mask: commit_first_available_and_freeze
   - window: [25, 45]
     signal: current_llm_input
