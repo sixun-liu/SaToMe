@@ -1,7 +1,13 @@
 import pytest
 import torch
 
-from satome.salience import cell_pairwise_salience, local_salience_1d, local_salience_2d, top_fraction_mask
+from satome.salience import (
+    cell_isolation_salience,
+    cell_pairwise_salience,
+    local_salience_1d,
+    local_salience_2d,
+    top_fraction_mask,
+)
 
 
 def test_uniform_sequence_has_zero_salience() -> None:
@@ -32,6 +38,14 @@ def test_cell_score_detects_directional_disagreement() -> None:
     scores = cell_pairwise_salience(features, grid_height=2, grid_width=4)
     assert scores.shape == (1, 1, 2)
     assert scores[0, 0, 1] > scores[0, 0, 0]
+
+
+def test_cell_isolation_score_matches_historical_formula() -> None:
+    features = torch.tensor(
+        [[[1.0, 0.0], [1.0, 0.0], [1.0, 0.0], [0.0, 1.0]]]
+    )
+    scores = cell_isolation_salience(features, grid_height=2, grid_width=2)
+    torch.testing.assert_close(scores, torch.ones_like(scores))
 
 
 def test_top_fraction_mask_is_deterministic_on_ties() -> None:

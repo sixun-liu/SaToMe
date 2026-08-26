@@ -1,0 +1,6 @@
+[submodule "third_party/lavida"]
+	path = third_party/lavida
+	url = https://github.com/jacklishufan/LaViDa.git
+[submodule "third_party/llada_o"]
+	path = third_party/llada_o
+	url = https://github.com/ML-GSAI/LLaDA-o.git

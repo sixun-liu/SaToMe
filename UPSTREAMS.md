@@ -12,6 +12,8 @@ The LLaDA-o README at the pinned revision still shows the historical
 `GSAI-ML/LLaDA-o` clone URL. The accessible public repository is currently
 hosted under `ML-GSAI/LLaDA-o`.
 
-Backbone source is intentionally not vendored in the initial scaffold. The
-integration strategy will be finalized after benchmark-parity validation:
-either pinned source overlays or clearly marked modified copies.
+Both repositories are pinned as git submodules under `third_party/`. SaToMe
+keeps upstream history untouched: small integration diffs live under
+`integrations/<backbone>/patches/` and are applied explicitly by bootstrap
+scripts. Modified files retain upstream notices and add a SaToMe modification
+notice.

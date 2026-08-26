@@ -1,6 +1,6 @@
 # SaToMe
 
-Official implementation scaffold for **SaToMe: Salience-Driven Token Merging
+Official implementation of **SaToMe: Salience-Driven Token Merging
 for Omni-Capable Diffusion MLLMs** (EMNLP Findings).
 
 SaToMe is a training-free visual-token merging method for diffusion multimodal
@@ -12,16 +12,48 @@ paths:
 
 ## Release Status
 
-This repository is being rebuilt from the exact experiment implementations.
-The backbone-independent salience and T2I cell-planning primitives are present
-and tested. Backbone integrations are tracked below and will only be marked
-runnable after parity checks against the accepted-paper results.
+This is an initial, usable release focused on the LLaDA-o T2I path. The public
+core has been extracted from the experiment implementation, stripped of
+ablation branches, and checked against the saved 1K COCO run configuration.
 
 | Path | Backbone | Status |
 |---|---|---|
-| T2I | LLaDA-o | extraction in progress |
-| I2T | LLaDA-o | extraction in progress |
-| I2T | LaViDa | extraction in progress |
+| T2I | LLaDA-o | **MVP available; GPU smoke pending** |
+| I2T | LLaDA-o | planned |
+| I2T | LaViDa | planned |
+
+The MVP intentionally does not claim full-paper reproduction yet. It publishes
+the `benchmark_compatible_d63` T2I profile used by the reported 1K COCO run;
+the equation-aligned protection profile remains under provenance audit.
+
+## Quick Start: LLaDA-o T2I
+
+Start from an environment that can run the official LLaDA-o demo, then install
+SaToMe and apply the small integration patch:
+
+```bash
+git clone --recursive https://github.com/sixun-liu/SaToMe.git
+cd SaToMe
+python -m pip install -e .
+./scripts/apply_llada_o_patch.sh
+```
+
+Run a matched-seed baseline/SaToMe smoke comparison:
+
+```bash
+python scripts/llada_o_t2i_demo.py \
+  --model-path /path/to/GSAI-ML-LLaDA-o \
+  --mode both \
+  --output-dir outputs/t2i_smoke
+```
+
+The command writes `baseline.png`, `satome.png`, and `metrics.json`. At the
+default 1024x1024 setting, SaToMe retains 2,764/4,096 visual tokens during 29
+active model steps and protects 358/1,024 cells.
+
+See [the integration guide](integrations/llada_o/README.md) for implementation
+boundaries and [the extraction manifest](docs/EXTRACTION_MANIFEST.md) for exact
+experiment provenance.
 
 ## Repository Layout
 
@@ -44,6 +76,14 @@ pytest
 Model checkpoints and benchmark datasets are not distributed in this
 repository.
 
+## MVP Configuration
+
+The released profile uses a 2x2 grid, a 35% protected-cell ratio, prune-only
+sequence packing, current-input reconstruction owners, copied owner velocity
+at dropped positions, and soft restoration with `alpha=0.95`. Merging is active
+on steps `[16, 45)`. See [configs/t2i/llada_o.yaml](configs/t2i/llada_o.yaml)
+for the two-stage protection schedule.
+
 ## Upstream Backbones
 
 The release is developed against pinned versions of
@@ -56,3 +96,8 @@ for exact revisions and licensing details.
 SaToMe is released under the Apache License 2.0. The upstream backbones are
 also Apache-2.0 licensed; their notices and modification boundaries are kept
 explicit in this repository.
+
+## Citation
+
+The proceedings BibTeX entry will be added when the final EMNLP Findings
+metadata is available.

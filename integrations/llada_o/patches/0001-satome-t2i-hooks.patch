@@ -1,0 +1,97 @@
+diff --git a/modeling/lladao/lladao.py b/modeling/lladao/lladao.py
+index cc98132..82cd3a9 100644
+--- a/modeling/lladao/lladao.py
++++ b/modeling/lladao/lladao.py
+@@ -1,5 +1,6 @@
+ # Copyright 2025 AntGroup and/or its affiliates.
+ # SPDX-License-Identifier: Apache-2.0
++# Modified by SaToMe contributors in 2026.
+ 
+ import copy
+ from typing import List, Tuple, Optional
+@@ -12,6 +13,8 @@ from torch.nn.attention.flex_attention import create_block_mask
+ from transformers.configuration_utils import PretrainedConfig
+ from transformers.modeling_utils import PreTrainedModel
+ 
++from satome.integrations.llada_o_t2i import LLaDAOT2IRuntime
++
+ from data.data_utils import (
+     create_sparse_mask, 
+     get_flattened_position_ids_extrapolate, 
+@@ -896,7 +899,13 @@ class LLaDAO(PreTrainedModel):
+         dts =  timesteps[:-1] - timesteps[1:]
+         timesteps = timesteps[:-1]
+ 
++        satome_runtime = getattr(self, "_satome_t2i_runtime", None)
++        if satome_runtime is not None:
++            satome_runtime.reset(x_t)
++
+         for i, t in tqdm(enumerate(timesteps), total=len(timesteps)):
++            if satome_runtime is not None:
++                satome_runtime.begin_step(i)
+ 
+             timestep = torch.tensor([t] * x_t.shape[0], device=x_t.device)
+             if t > cfg_interval[0] and t <= cfg_interval[1]:
+@@ -938,9 +947,14 @@ class LLaDAO(PreTrainedModel):
+                 cfg_type=cfg_type,
+             )
+ 
+-            x_t = x_t - v_t.to(x_t.device) * dts[i] # velocity pointing from data to noise
++            update_base = x_t
++            if satome_runtime is not None:
++                update_base = satome_runtime.restore_update_base(x_t)
++            x_t = update_base - v_t.to(x_t.device) * dts[i] # velocity pointing from data to noise
+             if cls_t is not None:
+                 cls_t = cls_t - cls_v_t.to(cls_t.device) * dts[i]
++            if satome_runtime is not None:
++                satome_runtime.observe_updated_latent(x_t)
+         if cls_t is not None:
+             unpacked_latent = x_t.split((packed_seqlens - 3).tolist()) # remove cls
+         else:
+@@ -999,6 +1013,32 @@ class LLaDAO(PreTrainedModel):
+         else:
+             packed_sequence[packed_vae_token_indexes] = x_t
+ 
++        satome_runtime: LLaDAOT2IRuntime | None = getattr(self, "_satome_t2i_runtime", None)
++        if satome_runtime is not None and satome_runtime.active:
++            satome_inputs = satome_runtime.pack(
++                sequence=packed_sequence,
++                vae_token_indexes=packed_vae_token_indexes,
++                text_indexes=packed_text_indexes,
++                position_ids=packed_position_ids,
++                query_indexes=packed_indexes,
++                sequence_lengths=packed_seqlens,
++                cfg_text_position_ids=cfg_text_packed_position_ids,
++                cfg_text_query_indexes=cfg_text_packed_query_indexes,
++                cfg_image_position_ids=cfg_img_packed_position_ids,
++                cfg_image_query_indexes=cfg_img_packed_query_indexes,
++                has_cls_token=cls_t is not None,
++            )
++            packed_sequence = satome_inputs.sequence
++            packed_vae_token_indexes = satome_inputs.vae_token_indexes
++            packed_text_indexes = satome_inputs.text_indexes
++            packed_position_ids = satome_inputs.position_ids
++            packed_indexes = satome_inputs.query_indexes
++            packed_seqlens = satome_inputs.sequence_lengths
++            cfg_text_packed_position_ids = satome_inputs.cfg_text_position_ids
++            cfg_text_packed_query_indexes = satome_inputs.cfg_text_query_indexes
++            cfg_img_packed_position_ids = satome_inputs.cfg_image_position_ids
++            cfg_img_packed_query_indexes = satome_inputs.cfg_image_query_indexes
++
+         extra_inputs = {}
+         if self.use_moe:
+             extra_inputs = {
+@@ -1069,6 +1109,13 @@ class LLaDAO(PreTrainedModel):
+                 cfg_img_v_t = self.llm2vae(cfg_img_output.packed_query_sequence)
+                 cfg_img_v_t = cfg_img_v_t[packed_vae_token_indexes]
+ 
++        if satome_runtime is not None:
++            v_t = satome_runtime.unmerge_velocity(v_t)
++            if cfg_text_scale > 1.0:
++                cfg_text_v_t = satome_runtime.unmerge_velocity(cfg_text_v_t)
++            if cfg_img_scale > 1.0:
++                cfg_img_v_t = satome_runtime.unmerge_velocity(cfg_img_v_t)
++
+         if cfg_text_scale > 1.0:
+             if cfg_renorm_type == "text_channel":
+                 v_t_text_ = cfg_text_v_t + cfg_text_scale * (v_t - cfg_text_v_t)

@@ -115,6 +115,23 @@ def cell_pairwise_salience(features: Tensor, grid_height: int, grid_width: int) 
     return scores.view(features.shape[0], grid_height // 2, grid_width // 2)
 
 
+def cell_isolation_salience(features: Tensor, grid_height: int, grid_width: int) -> Tensor:
+    """Score a cell by its most isolated token.
+
+    For each token in a 2x2 cell, this computes its mean cosine similarity to
+    the other three tokens. The cell score is one minus the smallest of those
+    four means, so a single structurally distinct token is enough to protect
+    the cell. This is the exact protection score used by the released D63 T2I
+    configuration.
+    """
+
+    cells = F.normalize(_to_cells(features, grid_height, grid_width).float(), dim=-1)
+    pairwise = torch.matmul(cells, cells.transpose(-1, -2))
+    mean_to_others = (pairwise.sum(dim=-1) - 1.0) / 3.0
+    scores = 1.0 - mean_to_others.min(dim=-1).values
+    return scores.view(features.shape[0], grid_height // 2, grid_width // 2)
+
+
 def top_fraction_mask(scores: Tensor, fraction: float) -> Tensor:
     """Select a deterministic top fraction independently for each batch item."""
 

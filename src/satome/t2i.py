@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Literal
 
 import torch
 import torch.nn.functional as F
 from torch import Tensor
 
-from .salience import _to_cells, cell_pairwise_salience, top_fraction_mask
+from .salience import (
+    _to_cells,
+    cell_isolation_salience,
+    cell_pairwise_salience,
+    top_fraction_mask,
+)
 
 
 _PAIR_OPTIONS = ((0, 1), (0, 2), (0, 3), (1, 2), (1, 3), (2, 3))
@@ -33,6 +39,7 @@ def build_cell_merge_plan(
     grid_height: int,
     grid_width: int,
     protect_ratio: float,
+    protection_score: Literal["isolation", "mean_pairwise"] = "isolation",
 ) -> CellMergePlan:
     """Build the paper's protection and reconstruction-minimizing 4-to-2 plan.
 
@@ -67,11 +74,23 @@ def build_cell_merge_plan(
     ).squeeze(2)
     selected_error = errors.gather(2, best_option.unsqueeze(-1)).squeeze(-1)
 
-    protection_score_grid = cell_pairwise_salience(
-        protection_features,
-        grid_height,
-        grid_width,
-    )
+    if protection_score == "isolation":
+        protection_score_grid = cell_isolation_salience(
+            protection_features,
+            grid_height,
+            grid_width,
+        )
+    elif protection_score == "mean_pairwise":
+        protection_score_grid = cell_pairwise_salience(
+            protection_features,
+            grid_height,
+            grid_width,
+        )
+    else:
+        raise ValueError(
+            "protection_score must be 'isolation' or 'mean_pairwise', "
+            f"got {protection_score!r}"
+        )
     protected_grid = top_fraction_mask(protection_score_grid, protect_ratio)
 
     return CellMergePlan(

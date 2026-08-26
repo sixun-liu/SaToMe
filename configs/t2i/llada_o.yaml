@@ -1,9 +1,19 @@
 backbone: llada_o
 task: text_to_image
+profile: benchmark_compatible_d63
 steps: 50
 window: [16, 45]
+protection_schedule:
+  - window: [16, 25]
+    signal: temporal_vae_delta
+    mask: commit_first_available_and_freeze
+  - window: [25, 45]
+    signal: current_llm_input
+    mask: recompute_each_step
 cell_size: 2
 protect_ratio: 0.35
-protection_signal: temporal_hidden_delta
+protection_score: isolation
+owner_signal: current_llm_input
+merge_input: prune_only
+unmerge_velocity: copy_assigned_owner
 alpha: 0.95
-salience_kernel_size: 11

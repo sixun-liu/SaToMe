@@ -13,13 +13,17 @@ Research source:
   - `references/LLaDA-o/modeling/lladao/lladao.py`
   - `references/LLaDA-o/modeling/lladao/llada_navit.py`
 - final mechanism family: `v16` / D63
-- accepted-paper defaults: 50 steps, window `[s16, s45]`, 2x2 cells,
-  protection ratio 0.35, soft restoration alpha 0.95
+- benchmark defaults: 50 steps, window `[s16, s45]`, 2x2 cells,
+  protection ratio 0.35, prune-only packing, and soft restoration alpha 0.95
+- exact 1K COCO schedule: fixed VAE-space temporal-delta (`lagdx`)
+  isolation mask during `[s16, s25)`, followed by per-step current-state
+  isolation masks during `[s25, s45)`; reconstruction owners always come from
+  the current LLM input (`owner=xt`)
 
 Extract only:
 
-1. temporal protection-signal capture;
-2. first-window-step protected-cell commit;
+1. temporal VAE-delta protection-signal capture;
+2. early-stage protected-cell commit;
 3. six-way reconstruction-minimizing 4-to-2 split;
 4. sequence packing and unpacking;
 5. source-position soft restoration;
@@ -28,10 +32,11 @@ Extract only:
 Do not extract the `v1`-`v15`/`v17`, `C*`, `D3`, oracle, random-partition,
 velocity-correction, or debug branches.
 
-Open parity check: the historical D63 benchmark scripts use the internal
-`lagdx` signal name, while the accepted-paper method is described as temporal
-hidden delta (`delta h`). Resolve this against saved run metadata before
-declaring the T2I integration benchmark-compatible.
+Provenance note: saved 1K COCO metadata confirms that the reported run used
+`lagdx`, not hidden-state `delta h`. It also confirms that the committed mask
+was used for steps 16-24 and current-state isolation was recomputed for steps
+25-44. The public `benchmark_compatible_d63` profile preserves those mechanics
+instead of relabeling them.
 
 The historical salience helper returns `-cos(h, local_mean)` while the paper
 and public core return `1-cos(h, local_mean)`. These scores differ by the
