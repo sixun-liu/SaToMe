@@ -1,0 +1,9 @@
+SaToMe
+Copyright 2026 SaToMe contributors
+
+This product includes integrations derived from LaViDa and LLaDA-o, each
+distributed under the Apache License 2.0. Modified upstream files must retain
+their original notices and carry a prominent modification notice.
+
+LaViDa: https://github.com/jacklishufan/LaViDa
+LLaDA-o: https://github.com/ML-GSAI/LLaDA-o

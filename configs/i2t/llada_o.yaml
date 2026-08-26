@@ -1,0 +1,5 @@
+backbone: llada_o
+task: image_to_text
+retention: 0.50
+merge_layer: 1
+salience_kernel_size: 11

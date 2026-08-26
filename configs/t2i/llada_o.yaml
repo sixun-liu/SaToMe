@@ -1,0 +1,9 @@
+backbone: llada_o
+task: text_to_image
+steps: 50
+window: [16, 45]
+cell_size: 2
+protect_ratio: 0.35
+protection_signal: temporal_hidden_delta
+alpha: 0.95
+salience_kernel_size: 11
