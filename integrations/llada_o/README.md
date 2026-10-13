@@ -4,7 +4,7 @@ Target upstream revision: `00b40b4123c730eaf765bba439f63dd1d453d152`.
 
 ## T2I MVP
 
-The T2I integration is a 47-line upstream hook. Planning, packing, unmerging,
+The T2I integration is a small upstream hook. Planning, packing, unmerging,
 and runtime state live in `src/satome/integrations/llada_o_t2i.py`.
 
 ```bash
@@ -13,6 +13,14 @@ python -m pip install -e .
 python scripts/llada_o_t2i_demo.py \
   --model-path /path/to/GSAI-ML-LLaDA-o \
   --mode both
+```
+
+On a CPU-only machine, validate the pinned upstream and patch without loading
+the model:
+
+```bash
+./scripts/apply_llada_o_patch.sh --check
+pytest tests/test_llada_o_hook_cpu.py
 ```
 
 The `both` mode loads the model once and emits matched-seed `baseline.png`,

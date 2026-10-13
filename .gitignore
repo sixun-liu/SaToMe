@@ -13,3 +13,7 @@ data/
 outputs/
 results/
 wandb/
+
+# Local credential scratch files
+tmp.txt
+*.token
